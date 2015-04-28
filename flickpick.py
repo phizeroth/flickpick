@@ -1,6 +1,5 @@
 from collections import OrderedDict
 from prettytable import PrettyTable
-from prettytable import from_db_cursor
 import datetime
 import os
 import random
@@ -37,17 +36,20 @@ def initialize():
 def clear():
 	os.system('cls' if os.name == 'nt' else 'clear')
 		
-		
+#def menu_loop():
+
 def main_menu_loop():
 	"""Show the menu"""
 	choice = None
 	
 	while choice not in ('q', 'quit', 'exit'):
-		print("=== main menu ===")
+		list_all()
+		print("\n === main menu ===")
 		for key, value in menu.items():
-			print("{}) {}".format(key, value.__doc__))
-		print("q) Quit")
-		choice = input('Choice:  ').lower().strip()
+			print(" {})  {}".format(key, value.__doc__) if (len(key) == 1) else 
+				  " {}) {}".format(key, value.__doc__))
+		print(" q)  Quit")
+		choice = input("\nChoice:  ").lower().strip()
 		
 		if choice in menu:
 			menu[choice]()
@@ -58,13 +60,13 @@ def main_menu_loop():
 
 def add_flick():
 	"""Add a flick"""
-	inp = input("Whose flick is this?  ").title()
-	if inp in ('Amanda', 'Philip'):
-		owner_ = inp
-	elif inp == 'Finch':
-		owner_ = 'Philip'
-	else:
-		print("I don't know that person!")
+	while True:
+		inp = input("Whose flick is this?  ").title()
+		if inp in ('Amanda', 'Philip'):
+			owner_ = inp
+			break
+		else:
+			print("I don't know that person!")
 		
 	title_ = input("Title:  ")
 	genre_ = input("Genre:  ")
@@ -92,34 +94,64 @@ def add_flick():
 					 avail=avail_)
 		list_all()
 	
-	
+
 def list_all():
 	"""List All"""
-	curs = db.get_cursor()
 	
-	def pretty_table():
-		col_names = [cn[0] for cn in curs.description]
-		rows = curs.fetchall()
-		pt = from_db_cursor(curs)
-		
+	def pretty_table(owner):
+		q = Flick.select().where(Flick.owner == owner).order_by(Flick.rank)
+
+		rows = []
+		for __ in q:
+			rows.append([__.rank, __.title, __.genre, __.avail])
+
+		print("\n| {}'s List |".format(owner))
+
+		col_names = ['rank', 'title', 'genre', 'avail']
+
 		x = PrettyTable(col_names)
 		x.align[col_names[1]] = 'l'
 		x.align[col_names[2]] = 'r'
 		x.padding_width = 1
 		for row in rows:
 			x.add_row(row)
-		x.sortby = "rank"
 		print(x)
-	
+
 	clear()
-	curs.execute('SELECT rank, title, genre, avail FROM Flick WHERE owner = "Philip"')
-	print("\n| Philip's List |")
-	pretty_table()
-	
-	curs.execute('SELECT rank, title, genre, avail FROM Flick WHERE owner = "Amanda"')
-	print("\n| Amanda's List |")
-	pretty_table()
-	
+	pretty_table("Philip")
+	pretty_table("Amanda")
+
+
+def list_selection():
+	"""List selection"""
+
+	def pretty_table(owner):
+		gtest = 'drama'
+		q = (Flick.select()
+			 .where((Flick.owner == owner) &
+			 		(Flick.genre == gtest))
+			 .order_by(Flick.rank))
+		rows = []
+		for __ in q:
+			rows.append([__.rank, __.title, __.genre, __.avail])
+
+		print("\n| {}'s List |".format(owner))
+
+		col_names = ['rank', 'title', 'genre', 'avail']
+
+		x = PrettyTable(col_names)
+		x.align[col_names[1]] = 'l'
+		x.align[col_names[2]] = 'r'
+		x.padding_width = 1
+		for row in rows:
+			x.add_row(row)
+		print(x)
+
+	clear()
+	pretty_table("Philip")
+	pretty_table("Amanda")
+	input(">  ")
+
 	
 def del_flick():
 	"""Delete a flick"""
@@ -161,27 +193,45 @@ def edit_menu_loop():
 		setattr(row, field, new_value)
 		row.save()
 		
-		
 	list_all()
 	inp = input("Enter title of flick to edit:  ")
 	row = Flick.get(Flick.title == inp)
 	
 	choice = None
 	
-	while choice not in ('q', 'quit', 'exit'):
+	while choice not in ('x', 'exit'):
 		list_all()
-		print("=== edit menu === {} ===".format(row.title))
+		print("\n === edit menu === {} ===".format(row.title))
 		for key, value in edit_menu.items():
-			print("{}) {}".format(key, value))
-		print("x) Exit to main menu")
-		choice = input('Choice:  ').lower().strip()
+			print(" {})  {}".format(key, value))
+		print(" x)  Exit to main menu")
+		choice = input('\nChoice:  ').lower().strip()
 		
 		if choice in edit_menu:
 			edit_apply(row, edit_menu[choice])
-		else:
-			clear()
-			break
 	
+
+def select_menu_loop():
+	"""Selection menu"""
+
+	list_all()
+
+	choice = None
+	
+	while choice not in ('x', 'exit'):
+		list_all()
+		print("\n === select menu ===")
+		for key, value in select_menu.items():
+			print(" {})  {}".format(key, value))
+		print(" x)  Exit to main menu")
+		choice = input('\nChoice:  ').lower().strip()
+		
+		if choice in edit_menu:
+			edit_apply(row, edit_menu[choice[0]])
+
+def choose_genre():
+	pass
+
 
 def test_func():
 	"""Test function"""
@@ -194,11 +244,12 @@ menu = OrderedDict([
 		('a', add_flick),
 		('d', del_flick),
 		('e', edit_menu_loop),
-		('la', list_all),	
-		#('ls', list_selection),
+		('la', list_all),
+		('s', select_menu_loop),
+		('ls', list_selection),
 		#('lw', list_watched),
 		#('pick', pick_flick),
-		('test', test_func),
+		#('test', test_func),
 	])
 
 edit_menu = OrderedDict([
@@ -210,11 +261,18 @@ edit_menu = OrderedDict([
 	])
 
 select_menu = OrderedDict([
-#		('t', choose_top),
-#		('g', choose_genre),
-#		('v', toggle_avail),
+		#('t', [choose_top, 0]),
+		('g', [choose_genre, '*']),
+		#('v', [toggle_avail, True]),
 	])
 
+# === LISTS ===
+owners = 'pass'
+selections = {
+	't': 0,
+	'g': 0,
+	'v': True
+}
 
 # === MAIN ===
 if __name__ == '__main__':

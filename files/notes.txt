@@ -1,0 +1,26 @@
++	Add option for selecting all from lower len
++	Add archiving movies watched
+o	Add option for selecting only from movies available
+		X	Basic - DONE
+		+	Change one-time option to an any-time toggle command
+o	Add functionality for read/write from text files
+		X	Read from file - DONE
+		+	Write back when archiving option is complete
+		
+		
+|  Owner  |  (rank)  |  Movie Title  |  Genre  |  Available  |  Watched  |  Date Added  |  Date Watched  |
+
+
+a	 Add flick
+d	 Delete flick
+la	 List all
+ls	 List selection
+lw	 List watched
+
+#	 Top # of flicks (1-x)
+v	 Toggle available (default is all)
+g	 Choose genre
+
+pick Pick a Flick!
+
+q	 Quit
