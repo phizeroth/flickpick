@@ -1,5 +1,3 @@
-# flickpick
-
 Flickpick
 =========
 
