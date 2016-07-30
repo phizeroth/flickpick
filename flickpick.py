@@ -54,6 +54,23 @@ def main_menu_loop():
 		if choice in menu:
 			menu[choice]()
 			
+def pretty_table(q, owner):
+
+	rows = []
+	for __ in q:
+		rows.append([__.rank, __.title, __.genre, __.avail])
+
+	print("\n| {}'s List |".format(owner))
+
+	col_names = ['rank', 'title', 'genre', 'avail']
+
+	x = PrettyTable(col_names)
+	x.align[col_names[1]] = 'l'
+	x.align[col_names[2]] = 'r'
+	x.padding_width = 1
+	for row in rows:
+		x.add_row(row)
+	print(x)
 			
 			
 # === MENU OPTIONS ===
@@ -98,61 +115,30 @@ def add_flick():
 
 def list_all():
 	"""List All"""
-	
-	def pretty_table(owner):
-		q = Flick.select()
-			.where(Flick.owner == owner)
-			.order_by(Flick.rank)
 
-		rows = []
-		for __ in q:
-			rows.append([__.rank, __.title, __.genre, __.avail])
-
-		print("\n| {}'s List |".format(owner))
-
-		col_names = ['rank', 'title', 'genre', 'avail']
-
-		x = PrettyTable(col_names)
-		x.align[col_names[1]] = 'l'
-		x.align[col_names[2]] = 'r'
-		x.padding_width = 1
-		for row in rows:
-			x.add_row(row)
-		print(x)
+	def query(owner):
+		return ((Flick.select()
+				 .where(Flick.owner == owner)
+				 .order_by(Flick.rank)), owner)
 
 	clear()
-	pretty_table("Phi")
-	pretty_table("Iota")
+	pretty_table(*query("Phi"))
+	pretty_table(*query("Iota"))
 
 
 def list_selection():
 	"""List selection"""
 
-	def pretty_table(owner):
+	def query(owner):
 		gtest = 'Stuff'
-		q = Flick.select()
-			 .where((Flick.owner == owner) &
-			 		(Flick.genre == gtest))
-			 .order_by(Flick.rank)
-		rows = []
-		for __ in q:
-			rows.append([__.rank, __.title, __.genre, __.avail])
-
-		print("\n| {}'s List |".format(owner))
-
-		col_names = ['rank', 'title', 'genre', 'avail']
-
-		x = PrettyTable(col_names)
-		x.align[col_names[1]] = 'l'
-		x.align[col_names[2]] = 'r'
-		x.padding_width = 1
-		for row in rows:
-			x.add_row(row)
-		print(x)
+		return ((Flick.select()
+				 .where((Flick.owner == owner) &
+		 				(Flick.genre == gtest))
+				 .order_by(Flick.rank)), owner)
 
 	clear()
-	pretty_table("Phi")
-	pretty_table("Iota")
+	pretty_table(*query("Phi"))
+	pretty_table(*query("Iota"))
 	input(">  ")
 
 	
