@@ -100,7 +100,9 @@ def list_all():
 	"""List All"""
 	
 	def pretty_table(owner):
-		q = Flick.select().where(Flick.owner == owner).order_by(Flick.rank)
+		q = Flick.select()
+			.where(Flick.owner == owner)
+			.order_by(Flick.rank)
 
 		rows = []
 		for __ in q:
@@ -127,11 +129,11 @@ def list_selection():
 	"""List selection"""
 
 	def pretty_table(owner):
-		gtest = 'drama'
-		q = (Flick.select()
+		gtest = 'Stuff'
+		q = Flick.select()
 			 .where((Flick.owner == owner) &
 			 		(Flick.genre == gtest))
-			 .order_by(Flick.rank))
+			 .order_by(Flick.rank)
 		rows = []
 		for __ in q:
 			rows.append([__.rank, __.title, __.genre, __.avail])
@@ -144,7 +146,7 @@ def list_selection():
 		x.align[col_names[1]] = 'l'
 		x.align[col_names[2]] = 'r'
 		x.padding_width = 1
-		for row in rows:client
+		for row in rows:
 			x.add_row(row)
 		print(x)
 
