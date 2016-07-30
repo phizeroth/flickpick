@@ -62,12 +62,12 @@ def add_flick():
 	"""Add a flick"""
 	while True:
 		inp = input("Whose flick is this?  ").title()
-		if inp in ('Amanda', 'Philip'):
+		if inp in ('Iota', 'Phi'):
 			owner_ = inp
 			break
 		else:
 			print("I don't know that person!")
-		
+	
 	title_ = input("Title:  ")
 	genre_ = input("Genre:  ")
 	if input("Is this flick readily available? (y/n)\n>:  ").lower() == 'y':
@@ -77,8 +77,9 @@ def add_flick():
 	
 	list_all()
 	rank_ = input("Rank:  ")
-		
-	if input("Add flick? (y/n):  ").lower() != 'n':
+	
+	if input("Are you sure you want to add \"{}\"? (Y/n):  "
+		.format(title_)).lower() != 'n':
 		
 		if (Flick.select()
 			  .where((Flick.owner == owner_) & (Flick.rank == rank_))
@@ -118,8 +119,8 @@ def list_all():
 		print(x)
 
 	clear()
-	pretty_table("Philip")
-	pretty_table("Amanda")
+	pretty_table("Phi")
+	pretty_table("Iota")
 
 
 def list_selection():
@@ -143,13 +144,13 @@ def list_selection():
 		x.align[col_names[1]] = 'l'
 		x.align[col_names[2]] = 'r'
 		x.padding_width = 1
-		for row in rows:
+		for row in rows:client
 			x.add_row(row)
 		print(x)
 
 	clear()
-	pretty_table("Philip")
-	pretty_table("Amanda")
+	pretty_table("Phi")
+	pretty_table("Iota")
 	input(">  ")
 
 	
@@ -158,10 +159,12 @@ def del_flick():
 	list_all()
 	inp = input("Enter title of flick to delete:  ")
 	d = Flick.get(Flick.title == inp)
-	q = (Flick.update(rank=Flick.rank - 1)
-		 .where(Flick.rank >= d.rank))
-	q.execute()
-	d.delete_instance()
+	if input("Are you sure you want to DELETE \"{}\"? (y/N):  "
+		.format(d.title)).lower() == 'y':
+		q = (Flick.update(rank=Flick.rank - 1)
+			 .where(Flick.rank >= d.rank))
+		q.execute()
+		d.delete_instance()
 	
 
 def edit_menu_loop():
