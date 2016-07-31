@@ -46,16 +46,16 @@ def main_menu_loop():
 		list_all()
 		print("\n === main menu ===")
 		for key, value in menu.items():
-			print(" {})  {}".format(key, value.__doc__) if (len(key) == 1) else 
+			print("  {}) {}".format(key, value.__doc__) if (len(key) == 1) else 
 				  " {}) {}".format(key, value.__doc__))
-		print(" q)  Quit")
+		print("  q) Quit")
 		choice = input("\nChoice:  ").lower().strip()
 		
 		if choice in menu:
 			menu[choice]()
 			
 def pretty_table(q, owner):
-
+	"""Creates pretty table"""
 	rows = []
 	for __ in q:
 		rows.append([__.rank, __.title, __.genre, __.avail])
@@ -114,8 +114,7 @@ def add_flick():
 	
 
 def list_all():
-	"""List All"""
-
+	"""List all"""
 	def query(owner):
 		return ((Flick.select()
 				 .where(Flick.owner == owner)
@@ -126,22 +125,6 @@ def list_all():
 	pretty_table(*query("Iota"))
 
 
-def list_selection():
-	"""List selection"""
-
-	def query(owner):
-		gtest = 'Stuff'
-		return ((Flick.select()
-				 .where((Flick.owner == owner) &
-		 				(Flick.genre == gtest))
-				 .order_by(Flick.rank)), owner)
-
-	clear()
-	pretty_table(*query("Phi"))
-	pretty_table(*query("Iota"))
-	input(">  ")
-
-	
 def del_flick():
 	"""Delete a flick"""
 	list_all()
@@ -153,11 +136,10 @@ def del_flick():
 			 .where(Flick.rank >= d.rank))
 		q.execute()
 		d.delete_instance()
-	
+
 
 def edit_menu_loop():
 	"""Edit flick"""
-		
 	def edit_apply(row, field):
 		cur_value = getattr(row, field)
 		print("Current {}: {}".format(field, cur_value))
@@ -179,7 +161,6 @@ def edit_menu_loop():
 							(Flick.rank < cur_value) &
 							(Flick.rank >= new_value)))
 				q.execute()
-				
 		
 		setattr(row, field, new_value)
 		row.save()
@@ -200,35 +181,91 @@ def edit_menu_loop():
 		
 		if choice in edit_menu:
 			edit_apply(row, edit_menu[choice])
-	
 
-def select_menu_loop():
-	"""Selection menu"""
 
-	list_all()
 
+def list_selection():
+	"""List selection"""
+	if selections['t'] == "*":
+		ttestq = (Flick.rank != 666)
+	else:
+		ttestq = (Flick.rank <= selections['t'])
+
+	if selections['g'] == "*":
+		gtestq = (Flick.genre != "godisuck")
+	else:
+		gtestq = (Flick.genre == selections['g'])
+
+	if selections['v']:
+		vtestq = (Flick.avail != "~")
+	else:
+		vtestq = (Flick.avail != "godisuck")
+
+	def query(owner):
+		return ((Flick.select()
+				 .where((Flick.owner == owner) &
+		 				gtestq & ttestq & vtestq)
+				 .order_by(Flick.rank)), owner)
+
+	clear()
+	pretty_table(*query("Phi"))
+	pretty_table(*query("Iota"))
+
+
+def flickpick_menu_loop():
+	"""Flickpick Menu"""
 	choice = None
 	
 	while choice not in ('x', 'exit'):
-		list_all()
-		print("\n === select menu ===")
-		for key, value in select_menu.items():
-			print(" {})  {}".format(key, value))
-		print(" x)  Exit to main menu")
+		list_selection()
+		print("\n === flickpick menu ===")
+		for key, value in flickpick_menu.items():
+			print("  {}) {}  ({})".format(key, value.__doc__, selections[key]))
+		print(" ------------------")
+		print("  p) Pick a Flick!")
+		print(" ------------------")
+		print("  c) Clear all selections")
+		print("  x) Exit to main menu")
 		choice = input('\nChoice:  ').lower().strip()
 		
-		if choice in edit_menu:
-			edit_apply(row, edit_menu[choice[0]])
+		if choice in flickpick_menu:
+			flickpick_menu[choice]()
+		elif choice == "c":
+			selections['t'] = "*"
+			selections['g'] = "*"
+			selections['v'] = False
+#		elif choice == "p":
+#			flickpick_go()
 
 def choose_genre():
-	pass
+	"""Choose genre"""
+	list_selection()
+	selections['g'] = input("Pick genre ('*' for all):  ")
 
+def choose_top():
+	"""Choose top #"""
+	list_selection()
+	selections['t'] = input("Pick top # ('*' for all):  ")
+
+def toggle_avail():
+	"""Available"""
+	if selections['v'] == False:
+		selections['v'] = True
+	else:
+		selections['v'] = False
 
 def test_func():
 	"""Test function"""
-	list_all()
-	Flick.get(Flick.title == "Testing").delete_instance()
-		 
+	pass
+
+
+# === LISTS ===
+owners = 'pass'
+selections = {
+	't': "*",
+	'g': "*",
+	'v': False
+}
 		 
 # === MENUS ===
 menu = OrderedDict([
@@ -236,11 +273,9 @@ menu = OrderedDict([
 		('d', del_flick),
 		('e', edit_menu_loop),
 		('la', list_all),
-		('s', select_menu_loop),
-		('ls', list_selection),
-		#('lw', list_watched),
-		#('pick', pick_flick),
-		#('test', test_func),
+		('p', flickpick_menu_loop),
+#		('lw', list_watched),
+#		('test', test_func),
 	])
 
 edit_menu = OrderedDict([
@@ -248,22 +283,14 @@ edit_menu = OrderedDict([
 		('t', 'title'),
 		('g', 'genre'),
 		('a', 'avail'),
-		#('w', 'watched')
+#		('w', 'watched')
 	])
 
-select_menu = OrderedDict([
-		#('t', [choose_top, 0]),
-		('g', [choose_genre, '*']),
-		#('v', [toggle_avail, True]),
+flickpick_menu = OrderedDict([
+		('t', choose_top),
+		('g', choose_genre),
+		('v', toggle_avail),
 	])
-
-# === LISTS ===
-owners = 'pass'
-selections = {
-	't': 0,
-	'g': 0,
-	'v': True
-}
 
 # === MAIN ===
 if __name__ == '__main__':
