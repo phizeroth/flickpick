@@ -4,6 +4,7 @@ import datetime
 import os
 import random
 import sys
+import time
 
 from peewee import *
 
@@ -183,28 +184,31 @@ def edit_menu_loop():
 			edit_apply(row, edit_menu[choice])
 
 
-
 def list_selection():
 	"""List selection"""
+	global tq
+	global gq
+	global vq
+
 	if selections['t'] == "*":
-		ttestq = (Flick.rank != 666)
+		tq = (Flick.rank != 666)
 	else:
-		ttestq = (Flick.rank <= selections['t'])
+		tq = (Flick.rank <= selections['t'])
 
 	if selections['g'] == "*":
-		gtestq = (Flick.genre != "godisuck")
+		gq = (Flick.genre != "godisuck")
 	else:
-		gtestq = (Flick.genre == selections['g'])
+		gq = (Flick.genre == selections['g'])
 
 	if selections['v']:
-		vtestq = (Flick.avail != "~")
+		vq = (Flick.avail != "~")
 	else:
-		vtestq = (Flick.avail != "godisuck")
+		vq = (Flick.avail != "isthisreallythebestwaytodothis?")
 
 	def query(owner):
 		return ((Flick.select()
 				 .where((Flick.owner == owner) &
-		 				gtestq & ttestq & vtestq)
+		 				gq & tq & vq)
 				 .order_by(Flick.rank)), owner)
 
 	clear()
@@ -234,8 +238,8 @@ def flickpick_menu_loop():
 			selections['t'] = "*"
 			selections['g'] = "*"
 			selections['v'] = False
-#		elif choice == "p":
-#			flickpick_go()
+		elif choice == "p":
+			flickpick_go()
 
 def choose_genre():
 	"""Choose genre"""
@@ -258,6 +262,29 @@ def test_func():
 	"""Test function"""
 	pass
 
+def flickpick_go():
+	"""Pick a Flick!"""
+
+	pick = ((Flick.select()
+			 .where(gq & tq & vq)
+			 .order_by(fn.Random()).limit(1))
+			 .get())
+	clear()
+	print("\n")
+	for c in "=========Your pick is=========":
+		sys.stdout.write( '%s' % c )
+		sys.stdout.flush()
+		time.sleep(0.05)
+	print("\n\n" + pick.title.upper().center(30," "))
+	print("\n==============================")
+	input(">")
+
+	# def query(owner):
+	# 	return (pick, pick.owner)
+
+	# clear()
+	# pretty_table(*query(pick.owner))
+
 
 # === LISTS ===
 owners = 'pass'
@@ -266,13 +293,13 @@ selections = {
 	'g': "*",
 	'v': False
 }
-		 
+
 # === MENUS ===
 menu = OrderedDict([
 		('a', add_flick),
 		('d', del_flick),
 		('e', edit_menu_loop),
-		('la', list_all),
+#		('la', list_all),
 		('p', flickpick_menu_loop),
 #		('lw', list_watched),
 #		('test', test_func),
