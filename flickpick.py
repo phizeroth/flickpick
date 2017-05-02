@@ -200,10 +200,10 @@ def list_selection():
 	else:
 		gq = (Flick.genre == selections['g'])
 
-	if selections['v']:
-		vq = (Flick.avail != "~")
-	else:
+	if selections['v'] == False:
 		vq = (Flick.avail != "isthisreallythebestwaytodothis?")
+	else:
+		vq = (Flick.avail != "-")
 
 	def query(owner):
 		return ((Flick.select()
@@ -278,12 +278,6 @@ def flickpick_go():
 	print("\n\n" + pick.title.upper().center(30," "))
 	print("\n==============================")
 	input(">")
-
-	# def query(owner):
-	# 	return (pick, pick.owner)
-
-	# clear()
-	# pretty_table(*query(pick.owner))
 
 
 # === LISTS ===
